@@ -1,0 +1,129 @@
+---
+title: "class10: Structural Bioinformatics (Pt. 1)"
+author: "Jiachen Fan (A17662703)"
+format: pdf
+---
+# 1: Introduction to the RCSB Protein Data Bank (PDB)
+
+Download stats from 'https://www.rcsb.org/stats/summary'
+
+At the time of writting there are 183,201 protein structure.
+In UniProt there are 251600,768 protein sequences.
+Only a small amount of proteins structure are available.
+```{r}
+round(183201/251600768*100, 2)
+```
+
+
+> Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.
+
+```{r}
+stats <- read.csv('Data Export Summary.csv', row.names = 1)
+head(stats)
+```
+We want to generate a function and apply it to our files.
+We can use the 'gsub()' function to remove commas.
+
+```{r}
+string <- c('10', '100', 1, '1,000')
+x <- string
+as.numeric(gsub(",", "", x))
+```
+```{r}
+rm.comma <- function(x){
+  as.numeric(gsub(",", "", x)) 
+}
+
+pdbstats <- apply(stats, 2, rm.comma)     # '2' means apply to column
+pdbstats
+```
+We want our rownames back.
+
+```{r}
+rownames(pdbstats) <- rownames(stats)
+pdbstats
+```
+
+```{r}
+totals <- apply(pdbstats, 2, sum)
+round(totals/totals["Total"]*100,2)
+
+```
+It is 84.83% for X.ray and 8.33% for EM.
+
+> Q2-3  Lets skip these....
+
+> Q2: What proportion of structures in the PDB are protein?
+
+```{r}
+round(pdbstats['Total'][1]/sum(pdbstats['Total'])*100, 2)
+```
+
+> Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+22824 structures.
+
+# Using Mol* to examine HIV-Pr
+
+Here is a rubish pic of HIV-Pr that is not very useful yet.
+
+
+![](1HSG.png)
+Add a nicer pic colored by secondary structure with catalytic active site ASP 25 shown in each chain
+
+
+![](nice_pic.png)
+> Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?
+
+Because it is 'ball&stick' type, the water molecules are represented by 'O'
+
+> Q5: There is a critical “conserved” water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have
+
+HOH 332.
+
+# Using the bio3d package
+
+```{r}
+library(bio3d)
+
+pdb <- read.pdb('1hsg')
+pdb
+```
+> Q7: How many amino acid residues are there in this pdb object?
+
+198 amino acid residues.
+
+> Q8: Name one of the two non-protein residues?
+
+HOH
+
+> Q9: How many protein chains are in this structure?
+
+2
+```{r}
+attributes(pdb)
+```
+```{r}
+head(pdb$atom)
+```
+```{r}
+head(pdb$atom$resid)
+```
+```{r}
+pdb$atom$resid[pdb$calpha]
+```
+# Predicting functional motions of a single structure
+
+Run a Normal Mode Analysis (NMA)
+
+```{r}
+adk <- read.pdb('6s36')
+m <- nma(adk)
+plot(m)
+```
+
+```{r}
+mktrj(m, file="m.pdb")
+```
+
+![](ADK_M7.PDB.png)

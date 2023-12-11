@@ -1,0 +1,242 @@
+---
+title: "Class07: Machine Learning 1"
+author: "Jiachen Fan (A17662703)"
+format: pdf
+---
+## Clustering
+
+We will start with k-means clustering.
+To get started let's make some data up:
+```{r}
+hist(rnorm(10000, mean = 3))
+```
+
+```{r}
+tmp <- c(rnorm(30,3),rnorm(30, -3))
+x <- cbind(x=tmp, y=rev(tmp))
+plot(x)
+```
+The main function in R for K-means clustering is called 'kmeans()'.
+```{r}
+k <- kmeans(x, centers=2, nstart=20)
+k
+```
+> Q1. How many points are in each cluster?
+
+```{r}
+k$size
+```
+> Q2. The clustering result i.e. membership vector?
+
+```{r}
+k$cluster
+```
+> Q3. Cluster centers
+
+```{r}
+k$centers
+```
+> Q4. Make a plot of our data colored by clustering results with optionally the cluster centers shown.
+
+```{r}
+plot(x, col=k$cluster, pch=16)                  # 'pch=16' make points more clear to see
+points(k$centers, col='blue',pch=15, cex=2)
+```
+> Q5. Run kmeans again but cluster into 3 groups and plot the results like we did above.
+
+```{r}
+k3 <- kmeans(x, centers=3, nstart=20)
+plot(x, col=k3$cluster, pch=16)                  
+points(k3$centers, col='blue',pch=15, cex=2)
+
+```
+# Hierarchical Clustering
+
+It has an advantage in that it can reveal the structure in your data rather than imposing a structure as k-means will.
+
+The main function in 'base' R is called 'hclust()'
+
+It requires a distance matrix as input, not the raw data itself.
+
+```{r}
+hc <- hclust(dist(x))
+hc
+```
+```{r}
+plot(hc)
+abline(h=8,col='red')
+```
+The function to get our clusters from a hclust object is called 'cutree()'
+```{r}
+grps <- cutree(hc, h=8)
+grps
+```
+> Q. Plot our hclust results in terms of our data colored by cluster membership.
+
+```{r}
+plot(x, col=grps, pch =15)
+```
+single-link: smallest 
+omplete-link: largest
+average-link: average
+
+# Principal Component Analysis (PCA)
+
+We will work on data from the UK about the strange stuff folks there eat. It has 17 diffenrent foods for 4 countries.
+
+```{r}
+url <- 'https://tinyurl.com/UK-foods'
+X<- read.csv(url)
+X
+```
+> Q1. How many rows and columns are in your new data frame named x? What R functions could you use to answer this questions?
+
+```{r}
+dim(X)      # 'dim()'
+```
+```{r}
+# Note how the minus indexing works
+rownames(X) <- X[,1]
+X <- X[,-1]
+head(X)
+dim(X)
+```
+There is another way to do it.
+
+```{r}
+x <- read.csv(url, row.names=1)
+head(x)
+```
+
+> Q2. Which approach to solving the ‘row-names problem’ mentioned above do you prefer and why? Is one approach more robust than another under certain circumstances?
+
+I love the second one since it is concise and make no change to the raw data. If I repeat the first one, it will drop one more column.
+
+> Q3: Changing what optional argument in the above barplot() function results in the following plot?
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(X)))
+barplot(as.matrix(x), beside=FALSE, col=rainbow(nrow(X)))
+```
+
+> Q5: Generating all pairwise plots may help somewhat. Can you make sense of the following code and resulting figure? What does it mean if a given point lies on the diagonal for a given plot?
+
+It plots food consumption of every country versus other countries. So it has 12 figures in total. 
+```{r}
+pairs(x, col=rainbow(10), pch=16)
+```
+> Q6. What is the main differences between N. Ireland and the other countries of the UK in terms of this data-set?
+
+N. Ireland eating habit are quite different from other countries because there are some points out of the line. We can see they eat more 'blue' representing food compared to others.
+
+# PCA to the rescue
+
+The main function for PCA is called 'prcomp()' 
+
+It wants the transpose (with the 't()') of our food data for analysis
+```{r}
+# Use the prcomp() PCA function 
+pca <- prcomp(t(x))
+summary(pca)
+```
+One of the main results that folks look for is called the 'score plot' a.k.a. PC plot, PC1 vs PC2 plot...
+
+> Q7. Complete the code below to generate a plot of PC1 vs PC2. The second line adds text labels over the data points.
+
+```{r}
+# Plot PC1 vs PC2
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x))
+```
+> Q8. Customize your plot so that the colors of the country names match the colors in our UK and Ireland map and table at start of this document.
+
+```{r}
+# Plot PC1 vs PC2
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x), col = rainbow(nrow(x)))
+```
+```{r}
+v <- round( pca$sdev^2/sum(pca$sdev^2) * 100 )
+v
+```
+
+```{r}
+barplot(v, xlab="Principal Component", ylab="Percent Variation")
+```
+# Digging deeper (variable loadings)
+```{r}
+# Let's focus on PC1 as it accounts for > 90% of variance 
+pca$rotation
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,1], las=2 )
+```
+
+> Q9: Generate a similar ‘loadings plot’ for PC2. What two food groups feature prominantely and what does PC2 maninly tell us about?
+
+Fresh_potatoes and Soft_drinks are the two groups contribute most to the variance in PC2.
+
+PC2 mainly tells us the variance between different countries are from original variables: Fresh_potatoes and Soft_drinks. These differences contribute to the variance in countries.
+
+```{r}
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,2], las=2 )
+```
+# Using ggplot for these figures
+```{r}
+library(ggplot2)
+
+df <- as.data.frame(pca$x)
+df_lab <- tibble::rownames_to_column(df, "Country")
+
+# Our first basic plot
+ggplot(df_lab) + 
+  aes(PC1, PC2, col=Country) + 
+  geom_point()
+```
+```{r}
+ggplot(df_lab) + 
+  aes(PC1, PC2, col=Country, label=Country) + 
+  geom_hline(yintercept = 0, col="gray") +
+  geom_vline(xintercept = 0, col="gray") +
+  geom_point(show.legend = FALSE) +
+  geom_label(hjust=1, nudge_x = -10, show.legend = FALSE) +
+  expand_limits(x = c(-300,500)) +
+  xlab("PC1 (67.4%)") +
+  ylab("PC2 (28%)") +
+  theme_bw()
+```
+```{r}
+ld <- as.data.frame(pca$rotation)
+ld_lab <- tibble::rownames_to_column(ld, "Food")
+
+ggplot(ld_lab) +
+  aes(PC1, Food) +
+  geom_col() 
+```
+```{r}
+ggplot(ld_lab) +
+  aes(PC1, reorder(Food, PC1), bg=PC1) +
+  geom_col() + 
+  xlab("PC1 Loadings/Contributions") +
+  ylab("Food Group") +
+  scale_fill_gradient2(low="purple", mid="gray", high="darkgreen", guide=NULL) +
+  theme_bw()
+```
+# Biplots
+```{r}
+biplot(pca)
+```
+# 2. PCA of RNA-seq data
+```{r}
+url2 <- "https://tinyurl.com/expression-CSV"
+rna.data <- read.csv(url2, row.names=1)
+head(rna.data)
+```
+
+> Q10: How many genes and samples are in this data set?
+
+```{r}
+dim(rna.data)
+```
+There are 100 genes and 10 samples.
+
