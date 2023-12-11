@@ -1,0 +1,151 @@
+---
+title: "class11: AlphaFold2 Analysis"
+author: "Jiachen Fan (A17662703)"
+format: pdf
+---
+
+Here we post process and inspect our modeling results from AlphaFold2.
+
+```{r}
+results_dir <- "hivprdimer_23119/"
+
+pdb_files <- list.files(results_dir, pattern =".pdb", full.names = T)
+```
+
+```{r}
+library(bio3d)
+
+pdbs <- pdbaln(pdb_files, fit = TRUE, exefile = 'msa')
+```
+
+```{r}
+rd <- rmsd(pdbs)
+rd
+```
+```{r}
+library(pheatmap)
+
+colnames(rd) <- paste0("m",1:5)
+rownames(rd) <- paste0("m",1:5)
+pheatmap(rd)
+```
+
+
+
+```{r}
+xyz <- pdbfit(pdbs, outfile="fitted")
+```
+
+A full atom based fitting or supperposition did not work very well because we have multiple chains that are in different conformations.
+
+I want to focus our supperpostion on the ost invariant part
+
+```{r}
+core <- core.find(pdbs)
+```
+```{r}
+core.inds <- core
+```
+
+```{r}
+xyz <- pdbfit(pdbs, inds = core.inds, outpath = 'core_fitted')
+```
+
+```{r}
+# Read a reference PDB structure
+pdb <- read.pdb("1hsg")
+
+rf <- rmsf(xyz)
+
+plotb3(rf, sse=pdb)
+abline(v=100, col="gray", ylab="RMSF")
+```
+
+To evaluate how good multi-chain or multi-domain models are wee need to look at the PAE scores (predicted aligned error)
+
+These are output as JSON format files.
+```{r}
+pae_files <- list.files(results_dir, pattern ="0.json", full.names = T)
+pae_files
+```
+
+```{r}
+library(jsonlite)
+
+pae1 <- read_json(pae_files[1], simplifyVector = TRUE)
+pae5 <- read_json(pae_files[5], simplifyVector = TRUE)
+```
+
+```{r}
+attributes(pae1)
+```
+
+```{r}
+pae1$max_pae
+pae5$max_pae
+```
+
+```{r}
+plot.dmat(pae5$pae,
+          xlab = 'Residue No.',
+          ylab = 'Residue No.',
+          zlim =c(0, 30))
+```
+```{r}
+plot.dmat(pae1$pae,
+          xlab = 'Residue No.',
+          ylab = 'Residue No.',
+          zlim =c(0, 30))
+```
+
+# Main points
+
+We can run AlphaFold on colab
+We can read these results into R and process to help make sense of these models and their PAE and pLDDT scores.
+
+# Residue conservation from alignment file
+
+```{r}
+aln_file <- list.files(path=results_dir,
+                       pattern=".a3m$",
+                        full.names = TRUE)
+aln_file
+```
+
+```{r}
+aln <- read.fasta(aln_file[1], to.upper = TRUE)
+```
+How many sequences are in this alignment
+```{r}
+dim(aln$ali)
+```
+We can score residue conservation in the alignment with the conserv() function
+```{r}
+sim <- conserv(aln)
+```
+
+```{r}
+plotb3(sim[1:99], sse=trim.pdb(pdb, chain="A"),
+       ylab="Conservation Score")
+```
+
+```{r}
+con <- consensus(aln, cutoff = 0.9)
+con$seq
+```
+
+For a final visualization of these functionally important sites we can map this conservation score to the Occupancy column of a PDB file for viewing in molecular viewer programs such as Mol*, PyMol, VMD, chimera etc.
+```{r}
+m1.pdb <- read.pdb(pdb_files[1])
+occ <- vec2resno(c(sim[1:99], sim[1:99]), m1.pdb$atom$resno)
+write.pdb(m1.pdb, o=occ, file="m1_conserv.pdb")
+```
+
+```{r}
+sessionInfo()
+```
+# References
+
+Baek, Minkyung, Frank DiMaio, Ivan Anishchenko, Justas Dauparas, Sergey Ovchinnikov, Gyu Rie Lee, Jue Wang, et al. 2021. “Accurate Prediction of Protein Structures and Interactions Using a Three-Track Neural Network.” Science 373 (6557): 871–76. https://doi.org/10.1126/science.abj8754.
+Jumper, John, Richard Evans, Alexander Pritzel, Tim Green, Michael Figurnov, Olaf Ronneberger, Kathryn Tunyasuvunakool, et al. 2021. “Highly Accurate Protein Structure Prediction with AlphaFold.” Nature 596 (7873): 583–89. https://doi.org/10.1038/s41586-021-03819-2.
+Mirdita, Milot, Konstantin Schütze, Yoshitaka Moriwaki, Lim Heo, Sergey Ovchinnikov, and Martin Steinegger. 2022. “ColabFold: Making Protein Folding Accessible to All.” Nature Methods 19 (6): 679–82. https://doi.org/10.1038/s41592-022-01488-1.
