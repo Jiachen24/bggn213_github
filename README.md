@@ -1,6 +1,18 @@
 # bggn213_github
 My classwork from [BGGN213](https://bioboot.github.io/bggn213_F23/) at UC San Diego (Fall 2023)
 
-- class 14: [Data vis with GGPLOT](https://github.com/Jiachen24/bggn213_github/blob/main/class14/class14.pdf)
-
-- class 06: [something else]()
+- class 05: [Data exploration and visualization in R]()
+- class 06: [Why, when and how of writing your own R functions]()
+- class 07: [Introduction to machine learning for Bioinformatics 1]()
+- class 08: [Halloween Candy Mini-Project]()
+- class 09: [Unsupervised learning mini-project]()
+- class 10: [Structural Bioinformatics (pt1)]()
+- class 11: [AlphaFold and Structural Prediction (pt2)]()
+- class 12: [Veterans Day Holiday/Genome informatics and high throughput sequencing review]()
+- class 13: [Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists]()
+- class 14: [RNA-Seq mini project](https://github.com/Jiachen24/bggn213_github/blob/main/class14/class14.pdf)
+- class 15: [Hands-on with Git and GitHub]()
+- class 17: [Essential UNIX for bioinformatics]()
+- class 18: [Analyzing sequencing data in the cloud]()
+- class 19: [Investigating pertussis resurgence mini project]()
+- class 20: [Portfolio building and discussion of bioinformatics in industry]()
