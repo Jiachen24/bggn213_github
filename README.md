@@ -12,11 +12,11 @@ My classwork from [BGGN213](https://bioboot.github.io/bggn213_F23/) at UC San Di
 - class 09: [Unsupervised learning mini-project](https://github.com/Jiachen24/bggn213_github/tree/main/class09)
 - class 10: [Structural Bioinformatics (pt1)](https://github.com/Jiachen24/bggn213_github/tree/main/class10)
 - class 11: [AlphaFold and Structural Prediction (pt2)](https://github.com/Jiachen24/bggn213_github/tree/main/class11)
-- class 12: [Veterans Day Holiday/Genome informatics and high throughput sequencing review]()
+- class 12: [Veterans Day Holiday/Genome informatics and high throughput sequencing review]
 - class 13: [Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists](https://github.com/Jiachen24/bggn213_github/tree/main/class13)
 - class 14: [RNA-Seq mini project](https://github.com/Jiachen24/bggn213_github/blob/main/class14/class14.pdf)
-- class 15: [Hands-on with Git and GitHub]()
-- class 17: [Essential UNIX for bioinformatics]()
-- class 18: [Analyzing sequencing data in the cloud]()
+- class 15: [Hands-on with Git and GitHub]
+- class 17: [Essential UNIX for bioinformatics]
+- class 18: [Analyzing sequencing data in the cloud]
 - class 19: [Investigating pertussis resurgence mini project](https://github.com/Jiachen24/bggn213_github/tree/main/class19)
-- class 20: [Portfolio building and discussion of bioinformatics in industry]()
+- class 20: [Portfolio building and discussion of bioinformatics in industry]
